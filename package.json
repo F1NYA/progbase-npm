@@ -1,0 +1,26 @@
+{
+  "name": "progbase",
+  "version": "1.0.4",
+  "description": "NPM module for working with Progbase API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirick1/progbase-npm.git"
+  },
+  "keywords": [
+    "Progbase"
+  ],
+  "author": "Vladyslav Kyrychenko <kyrychenko.vladyslav@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kirick1/progbase-npm/issues"
+  },
+  "homepage": "https://github.com/kirick1/progbase-npm#readme",
+  "dependencies": {
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
+  }
+}
