@@ -2,9 +2,9 @@
   "name": "progbase",
   "version": "1.0.5",
   "description": "NPM module for working with Progbase API",
-  "main": "index.js",
+  "main": "progbase.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node progbase.js"
   },
   "repository": {
     "type": "git",
