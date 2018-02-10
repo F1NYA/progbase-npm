@@ -5,53 +5,175 @@ const os = require('os');
 const storage = require('./storage');
 
 const defaultRootDirPath = path.join(os.homedir(),'.Progbase');
-const reqOptions = new URL('https://progbase.herokuapp.com');
 
-const Progbase = (bitbucket_username = null, progbase_api_key = null, rootDirPath = defaultRootDirPath) => {
+function url(reqPath, username, password) {
+    const reqUrl = new URL('https://progbase.herokuapp.com');
+    reqUrl.pathname = '/api/v1/' + reqPath;
+    reqUrl.username = username;
+    reqUrl.password = password;
+    return reqUrl;
+}
+const progbase = (bitbucket_username = '', progbase_api_key = '', rootDirPath = defaultRootDirPath) => {
+    const defaultDataPath = path.join(rootDirPath,'Data');
     const Storage = storage(rootDirPath);
-    let User = {};
-    if(bitbucket_username && progbase_api_key) {
-        User.bitbucket_username = bitbucket_username;
-        User.progbase_api_key = progbase_api_key;
-        Storage.setData(User, 'auth_data.txt', rootDirPath, true);
-    } else {
-        const authData = Storage.getData('auth_data.txt', path.join(rootDirPath,'Data'), true);
+    let User = {
+        bitbucket_username: bitbucket_username,
+        progbase_api_key: progbase_api_key
+    };
+    if(User.bitbucket_username && User.progbase_api_key) Storage.setData(User, 'auth_data.txt', defaultDataPath, true);
+    else {
+        const authData = Storage.getData('auth_data.txt', defaultDataPath, true);
         if(authData) {
             User.bitbucket_username = authData.bitbucket_username;
             User.progbase_api_key = authData.progbase_api_key;
         }
     }
-    function getRequest(reqPath = '') {
-        const dataFileName = path.format({name:'data' + reqPath,ext:'.json'});
-        const dataFilePath = path.join(rootDirPath,'Data');
-        let dataFromFile = Storage.getData(dataFileName,dataFilePath);
-        if(!dataFromFile) {
-            reqOptions.pathname = '/api/v1/' + reqPath;
-            reqOptions.username = User.bitbucket_username;
-            reqOptions.password = User.progbase_api_key;
-            https.get(reqOptions, res => {
-                let data = '';
-                res.on('data', chunk => {data += chunk});
-                res.on('end', () => {
-                    const parsedData = new Buffer(data).toString();
-                    //console.log(typeof(parsedData));
-                    //console.log(parsedData);
-                    Storage.setData(parsedData, dataFileName, dataFilePath);
-                });
-            }).on('error', error => console.error(error));
-        } else return dataFromFile;
+
+    function getRequest(reqPath = '', reqDataFileName = 'data.json', user = '') {
+        const reqUrl = url(reqPath,user.bitbucket_username,user.progbase_api_key);
+        https.get(reqUrl, res => {
+            console.log(res.statusCode);
+            let data = '';
+            res.on('data', chunk => {data += chunk});
+            res.on('end', () => {Storage.setData(data,reqDataFileName,defaultDataPath)});
+        }).on('error', err => console.error('ERROR: request', err));
+    }
+    function getRequestData(reqPath = '', reqDataFileName = 'data.json', user = '') {
+        if(Storage.dataExists(reqDataFileName)) return Storage.getData(reqDataFileName, defaultDataPath);
+        else return getRequest(reqPath,reqDataFileName,user);
     }
     return {
         origin() {
-            getRequest();
+            const reqPath = '';
+            const reqDataFileName = path.format({name:'origin',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        courses() {
+            const reqPath = 'courses';
+            const reqDataFileName = path.format({name:'courses',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        course(course_id) {
+            const reqPath = 'courses/' + course_id;
+            const reqDataFileName = path.format({name:'courses_'+course_id,ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        modules() {
+            const reqPath = 'modules';
+            const reqDataFileName = path.format({name:'modules',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        module(module_id) {
+            const reqPath = 'modules/' + module_id;
+            const reqDataFileName = path.format({name:'modules_'+module_id,ext:'.json'});
+            getRequestData(reqPath,reqDataFileName);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        tasks(module_id) {
+            const reqPath = 'modules/' + module_id + '/tasks';
+            const reqDataFileName = path.format({name:'modules_'+module_id+'_tasks',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        user(username) {
+            const reqPath = 'users/' + username;
+            const reqDataFileName = path.format({name:'users_'+username,ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        me() {
+            const reqPath = 'user';
+            const reqDataFileName = path.format({name:'user',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        myCommits() {
+            const reqPath = 'user/commits';
+            const reqDataFileName = path.format({name:'user_commits',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        commits(username) {
+            const reqPath = 'users/' + username + '/commits';
+            const reqDataFileName = path.format({name:'users_'+username+'_commits',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        groups() {
+            const reqPath = 'groups';
+            const reqDataFileName = path.format({name:'groups',ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
+        },
+        group(group_id) {
+            const reqPath = 'groups/' + group_id;
+            const reqDataFileName = path.format({name:'groups_' + group_id,ext:'.json'});
+            getRequestData(reqPath,reqDataFileName,User);
+            return {
+                getData() {
+                    return getRequestData(reqPath,reqDataFileName,User);
+                }
+            }
         }
     }
 };
 
-//console.log(Progbase().origin());
-
-const Storage = storage(defaultRootDirPath);
-Storage.setData(JSON.stringify({g:'sjdn',h:'sdjnvlk'}));
-//console.log(Storage.getData());
-Storage.clear();
+const Progbase = progbase();
+console.log(Progbase.origin().getData());
+console.log(Progbase.courses().getData());
+console.log(Progbase.modules().getData());
+console.log(Progbase.module('progbase').getData());
+console.log(Progbase.module('webprogbase').getData());
+console.log(Progbase.user('kirick1').getData());
+console.log(Progbase.me().getData());
+console.log(Progbase.myCommits().getData());
+console.log(Progbase.groups().getData());
 
