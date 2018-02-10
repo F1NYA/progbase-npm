@@ -166,7 +166,9 @@ const progbase = (bitbucket_username = '', progbase_api_key = '', rootDirPath = 
     }
 };
 
-const Progbase = progbase();
+module.exports = progbase;
+
+/*const Progbase = progbase();
 console.log(Progbase.origin().getData());
 console.log(Progbase.courses().getData());
 console.log(Progbase.modules().getData());
@@ -175,5 +177,4 @@ console.log(Progbase.module('webprogbase').getData());
 console.log(Progbase.user('kirick1').getData());
 console.log(Progbase.me().getData());
 console.log(Progbase.myCommits().getData());
-console.log(Progbase.groups().getData());
-
+console.log(Progbase.groups().getData());*/
