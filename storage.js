@@ -4,7 +4,9 @@ const path = require('path');
 const util = require('util');
 const crypto = require('crypto');
 
-const defaultSecret = os.userInfo({encoding:'base64'}).username.toString() + os.userInfo({encoding:'base64'}).homedir.toString();
+const {username, homedir} = os.userInfo({encoding:'base64'});
+
+const defaultSecret = username.toString() + homedir.toString();
 const options = { encoding: 'utf8' };
 
 function Cipher(data, secret = defaultSecret) {
