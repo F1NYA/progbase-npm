@@ -20,10 +20,11 @@ const progbase = (bitbucket_username = '', progbase_api_key = '', rootDirPath = 
         bitbucket_username: bitbucket_username,
         progbase_api_key: progbase_api_key
     };
-    if(User.bitbucket_username && User.progbase_api_key) Storage.setData(User, 'auth_data.txt', defaultDataPath, true);
+    if (User.bitbucket_username && User.progbase_api_key)
+        Storage.setData(User, 'auth_data.txt', defaultDataPath, true);
     else {
         const authData = Storage.getData('auth_data.txt', defaultDataPath, true);
-        if(authData) {
+        if (authData) {
             User.bitbucket_username = authData.bitbucket_username;
             User.progbase_api_key = authData.progbase_api_key;
         }
@@ -39,8 +40,9 @@ const progbase = (bitbucket_username = '', progbase_api_key = '', rootDirPath = 
         }).on('error', err => console.error('ERROR: request', err));
     }
     function getRequestData(reqPath = '', reqDataFileName = 'data.json', user = '') {
-        if(Storage.dataExists(reqDataFileName)) return Storage.getData(reqDataFileName, defaultDataPath);
-        else return getRequest(reqPath,reqDataFileName,user);
+        if(Storage.dataExists(reqDataFileName))
+            return Storage.getData(reqDataFileName, defaultDataPath);
+        return getRequest(reqPath,reqDataFileName,user);
     }
     return {
         origin() {
